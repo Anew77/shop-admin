@@ -25,7 +25,7 @@
 		<body>
 	
 		
-		<form href="AdminServlet.do?flag=manage" method="post">
+		<!-- <form href="AdminServlet.do?flag=manage" method="post"> -->
 			 <ul id="navigation">
 				<li>
 				

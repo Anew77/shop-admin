@@ -13,9 +13,9 @@ public class MenuDao {
      
    }
    
-   public int delAdmin(String adminName) {
-	   String sql="update adminInfo set state=0 where adminName=?";
-		return DBUtil.getScalar(sql, adminName);
+   public int delAdmin(int id) {
+	   String sql="update adminInfo set state=0 where id=?";
+		return DBUtil.getScalar(sql, id);
    }
    
    

@@ -1,12 +1,10 @@
-<%@ page language="java" contentType="text/html; charset=utf-8"
-    pageEncoding="utf-8"%>
+<%@ page language="java" import="java.util.*,com.beans.*" contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
 <%
 String path = request.getContextPath();  
 String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";             
 %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ taglib prefix="cr" uri="http://java.sun.com/jstl/core_rt" %> 
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %> 
+ <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %> 
 <!DOCTYPE html>
 <html>
  <head>
@@ -29,17 +27,11 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 				$(this).siblings().css("background","white");
 			});
 		});
-	</script>
-	<script>
-		function subForm(pageIndex)
-		{
-		    //pageIndex 不传入,表示,是点击"转到"按钮的时候触发的
-		    if(pageIndex){
-		    	window.location.href="${pageContext.request.contextPath}/AdminServlet.do?flag=manage&pageIndex="+pageIndex;
-		    }
-		    else{
-		        window.location.href="${pageContext.request.contextPath}/AdminServlet.do?flag=manage&pageIndex="+document.getElementById("pageIndex").value;
-		    }	
+	
+		//分页 转到功能
+		function subForm(pageIndex){
+			document.form1.action="AdminServlet.do?flag=getAdminList&&pageIndex="+pageIndex;
+			document.form1.submit();
 		}
 		
 		//点击上方的删除按钮,进行多项删除
@@ -58,10 +50,11 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 		
 		//点周删除按钮,删除单个管理员,先用ajax 验证删除的是不是自已,如果不是,再发请求删除
 		//用ajax进行验证的目的是为了保证不回发,不会将当前的pageIndex刷回到第一页
-		function del(id){
+		 function del(id){
 			if(confirm('确定要删除吗')){
 				var currentAdminId='${admin.id}';  //取到Session中的 admin 的 id
 				if(currentAdminId==''){
+					alert(currentAdminId);
 					alert("当前用户的session已失效!请重新登录");
 					window.top.location.href = "${pageContext.request.contextPath}/login.jsp";
 				}
@@ -70,12 +63,12 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 						alert("不能删除自已!");
 					}
 					else{
-						window.location.href="${pageContext.request.contextPath}/AdminServlet.do?flag=del&id="+id;
+						window.location.href="${pageContext.request.contextPath}/AdminServlet.do?flag=delAdmin&id="+id;
 					}
 				}
 			}
-		}
-		
+		} 
+		 
 		//给某个账号进行锁定或解除锁定
 		//因为加锁或解锁,都不需要改变pageIndex,所以把pageIndex也传上去,便于服务端返回pageIndex指定页面的数据
 		//lockFlag 值为1 表示锁定,值为0表示解锁
@@ -96,11 +89,11 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 			}
 		}
 		
-		window.onload=function(){
+	window.onload=function(){
 			$.ajax({
 				url:"AdminServlet.do",
 				 type:"post",
-				 data:{},
+				 data:{flag:"getAdminList"},
 				 success:function(data){
 					 
 				 }
@@ -110,7 +103,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 		
 	</script>
 	<link rel="stylesheet" type="text/css" href="css/maintable.css" ></link>
-
+    <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath }/css/maintable.css">
   </head>
   
   <body>
@@ -121,12 +114,18 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 				<input type="checkbox" id="top_ch_checkall"/> 全选 <a href="admin_add.jsp"> <img src="images/add.gif"/>添加 </a> <a href="javascript:void(0)"><img src="images/del.gif"/>删除</a> </div>
 	 </div>
 	 
-	 <form action="AdminServlet.do" name="form1">
+	 <form action="AdminServlet.do" name="form1" method="post" flag="getAdminList">
 	
 	 <table class="main_table" >
 	       <tr>
-	 				<th><input type="checkbox" id="ch_checkall" /></th>	<th>账号</th> 	<th>状态</th>	<th>备注</th>  <th>最后更新日期</th> 	<th>操作</th>
+	 				<th><input type="checkbox" id="ch_checkall" /></th>	
+	 				<th>账号</th> 
+	 				<th>状态</th>
+	 				<th>备注</th>  
+	 				<th>最后更新日期</th> 	
+	 				<th>操作</th>
 	 		</tr>
+	 		
 	 		<c:forEach var="admin" items="${adminList}">
 	 		<tr>
 	 				<td>
@@ -143,15 +142,17 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	 				
 	 				<td><fmt:formatDate value="${admin.editDate}"  pattern="yyyy-MM-dd hh:mm"></fmt:formatDate></td>	
 	 				<td>
+	 				
 		 				<c:if test="${admin.state=='2'}">
 		 				  <a href="javascript:lock(${admin.id },false,${pageInfo.pageIndex })">解锁&nbsp;&nbsp;|</a>
 		 				</c:if>
+		 				
                        <c:if test="${admin.state=='1'}">
 		 				  <a href="javascript:lock(${admin.id },true,${pageInfo.pageIndex })">锁定&nbsp;&nbsp;|</a>
 		 				  <a href="${pageContext.request.contextPath }/AdminServlet.do?flag=searchforupdate&id=${admin.id}">修改&nbsp;&nbsp;|</a>
 		 				</c:if>
+		 				<a href="javascript:del(${admin.id})">删除</a>
 		 				
-		 				<a href="javascript:del(${admin.id })">删除</a>
 	 				</td>
 	 		</tr>
 	 
@@ -159,15 +160,32 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	</table>
 	</form>
 	<div class="div_page" >
-		  <div class="div_page_left">    共有 <label>4</label> 条记录，当前第 <label>1</label> 页，共 <label>1</label> 页	</div>		
+		  <div class="div_page_left">    共有 <label>${page.rowCount}</label> 条记录，当前第 <label>${page.pageIndex}</label> 页，共 <label>${page.pageCount }</label> 页	</div>		
 		  <div class="div_page_right" > 	 
+		  			<c:choose>
+		  		<c:when test="${page.hasPre }">
+		  			<a href="AdminServlet.do?flag=manage&pageIndex=1">首页</a>
+		  			<a href="AdminServlet.do?flag=manage&pageIndex=${page.pageIndex-1 }">上一页</a>  &nbsp;  &nbsp;  &nbsp;  &nbsp;
+		  		</c:when>
+		  		<c:otherwise>
 		  			 首页
 	  	 			 上一页
+		  		</c:otherwise>
+		  	</c:choose>
+		  	
+		  	<c:choose>
+		  		<c:when test="${page.hasNext }">
+		  			<a href="AdminServlet.do?flag=manage&pageIndex=${page.pageIndex+1 }">下一页</a>
+		  			<a href="AdminServlet.do?flag=manage&pageIndex=${page.pageCount }">尾页</a>  &nbsp;  &nbsp;  &nbsp;  &nbsp;
+		  		</c:when>
+		  		<c:otherwise>
 		  			 下一页 
-	  	 		   尾页
+	  	 		   	尾页
+		  		</c:otherwise>
+		  	</c:choose>
 
-		  	  <button onclick="javascript:void(0)">转到</button>
-		  	 <input type="text" name="pageIndex" id="pageIndex" value="1" /> 页
+	  	  <button onclick="javascript:subForm(${param.pageIndex})">转到</button>
+	  	 <input type="text" name="pageIndex" id="pageIndex" value="${page.pageIndex }" /> 页
 		  	
 		   </div>
 			

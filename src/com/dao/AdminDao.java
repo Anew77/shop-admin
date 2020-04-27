@@ -28,6 +28,12 @@ public int addAdmin(AdminInfo admin) {
 	return result;
 }
 
+public long getAdminCount() {
+	String sql="select count(*) from AdminInfo";
+	long count =DBUtil.getScalar(sql);
+	return count;
+}
+
 public List<AdminInfo> getAdminList(){ 
 	   String sql="select * from adminInfo";
   List<AdminInfo> AdminList=DBUtil.getList(sql, AdminInfo.class);

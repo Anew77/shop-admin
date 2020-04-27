@@ -108,6 +108,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	 </div>
 				 
 	 <form action="AdminServlet.do"  method="get">
+	 <input type="hidden" name="flag" value="addAdmin">
 		 <table class="edit_table" >
 		 		<tr>
 		 			 	<td class="td_info">用户账号:</td>	
